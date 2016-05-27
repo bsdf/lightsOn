@@ -116,12 +116,8 @@ if [ $X11ScreenSaver_Control == 1 ]; then
     xset s $X11ScreenSaver_Timeout
 fi
 
-# Enumerate all the attached screens.
-displays=""
-while read id
-do
-    displays="$displays $id"
-done < <(xvinfo | sed -n 's/^screen #\([0-9]\+\)$/\1/p')
+# Enumerate displays
+displays=( $(w -oush | grep -Eo ":[0-9]+" | uniq) )
 
 # Detect screensaver been used.
 if [ "$(pidof -s xscreensaver)" ]; then
@@ -163,7 +159,7 @@ checkFullscreen()
     for display in $displays
     do
         # Get id of active window and clean output
-        activ_win_id=$(DISPLAY=:${display} xprop -root _NET_CLIENT_LIST_STACKING | sed 's/.*\, //')
+        activ_win_id=$(DISPLAY=${display} xprop -root _NET_CLIENT_LIST_STACKING | sed 's/.*\, //')
         # Previously used _NET_ACTIVE_WINDOW, but it didn't work with some flash
         # players (eg. Twitch.tv) in firefox. Using sed because id lengths can vary.
 
@@ -176,9 +172,9 @@ checkFullscreen()
 
         # Check if active window is in fullscreen or above state.
         if [[ -n $activ_win_id ]]; then
-            isActivWinFullscreen=$(DISPLAY=:${display} xprop -id $activ_win_id | grep -c _NET_WM_STATE_FULLSCREEN)
+            isActivWinFullscreen=$(DISPLAY=${display} xprop -id $activ_win_id | grep -c _NET_WM_STATE_FULLSCREEN)
             # Above state is used in some window managers instead of fullscreen.
-            isActivWinAbove=$(DISPLAY=:${display} xprop -id $activ_win_id | grep -c _NET_WM_STATE_ABOVE)
+            isActivWinAbove=$(DISPLAY=${display} xprop -id $activ_win_id | grep -c _NET_WM_STATE_ABOVE)
             log "checkFullscreen(): Display: $display isFullScreen=$isActivWinFullscreen"
             log "checkFullscreen(): Display: $display isAbove=$isActivWinAbove"
             if [[ "$isActivWinFullscreen" -ge 1 || "$isActivWinAbove" -ge 1 ]]; then
