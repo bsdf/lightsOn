@@ -195,10 +195,12 @@ checkFullscreen()
                 xset dpms
 
                 # Turn on X11 Screensaver if necessary.
-                X11ScreensaverStatus=$(xset q | grep timeout | sed "s/cycle.*$//" | tr -cd [:digit:])
-                if [ $X11ScreensaverStatus -eq 0 ]; then
-                    log "checkFullscreen(): Enabling X11 Screensaver Extension"
-                    xset s on
+                if [ $X11ScreenSaver_Control == 1 ]; then
+                    X11ScreensaverStatus=$(xset q | grep timeout | sed "s/cycle.*$//" | tr -cd [:digit:])
+                    if [ $X11ScreensaverStatus -eq 0 ]; then
+                        log "checkFullscreen(): Enabling X11 Screensaver Extension"
+                        xset s on
+                    fi
                 fi
 
             fi
@@ -454,10 +456,12 @@ delayScreensaver()
     fi
 
     # Turn off X11 Screensaver if necessary.
-    X11ScreensaverStatus=$(xset q | grep timeout | sed "s/cycle.*$//" | tr -cd [:digit:])
-    if [ $X11ScreensaverStatus -ge 1 ]; then
-        log "delayScreensaver(): turning X11 Screensaver Extension off"
-        xset s off
+    if [ $X11ScreenSaver_Control == 1 ]; then
+        X11ScreensaverStatus=$(xset q | grep timeout | sed "s/cycle.*$//" | tr -cd [:digit:])
+        if [ $X11ScreensaverStatus -ge 1 ]; then
+            log "delayScreensaver(): turning X11 Screensaver Extension off"
+            xset s off
+        fi
     fi
 
     # Reset gnome session idle timer.
